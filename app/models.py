@@ -52,12 +52,24 @@ class Player(Base):
     team: Mapped[Team] = relationship(back_populates="players")
 
 
+class Scorer(Base):
+    __tablename__ = "scorers"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    display_name: Mapped[str] = mapped_column(String(100))
+
+    games: Mapped[list["Game"]] = relationship(back_populates="scorer")
+
+
 class Game(Base):
     __tablename__ = "games"
 
     id: Mapped[int] = mapped_column(primary_key=True)
     home_team_id: Mapped[int] = mapped_column(ForeignKey("teams.id"))
     away_team_id: Mapped[int] = mapped_column(ForeignKey("teams.id"))
+    scorer_id: Mapped[int | None] = mapped_column(
+        ForeignKey("scorers.id", name="fk_games_scorer_id_scorers"), index=True
+    )
     game_date: Mapped[date] = mapped_column(Date, default=date.today)
     status: Mapped[GameStatus] = mapped_column(
         Enum(GameStatus, values_callable=lambda e: [m.value for m in e]),
@@ -72,6 +84,7 @@ class Game(Base):
     plays: Mapped[list["Play"]] = relationship(
         back_populates="game", order_by="Play.id"
     )
+    scorer: Mapped[Scorer | None] = relationship(back_populates="games")
 
 
 class Play(Base):

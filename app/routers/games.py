@@ -23,6 +23,8 @@ def create_game(body: schemas.GameCreate, db: Session = Depends(get_db)):
     for tid in (body.home_team_id, body.away_team_id):
         if not db.get(models.Team, tid):
             raise HTTPException(404, f"Team {tid} not found")
+    if body.scorer_id is not None and not db.get(models.Scorer, body.scorer_id):
+        raise HTTPException(404, "Scorer not found")
     data = body.model_dump(exclude_none=True)
     game = models.Game(**data)
     db.add(game)

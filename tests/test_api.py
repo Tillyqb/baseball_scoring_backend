@@ -36,6 +36,28 @@ def test_duplicate_team_conflict(client):
     assert client.post("/teams", json={"name": "X"}).status_code == 409
 
 
+def test_scorer_profiles_and_game_attribution(client):
+    home = client.post("/teams", json={"name": "Home"}).json()["id"]
+    away = client.post("/teams", json={"name": "Away"}).json()["id"]
+    scorer = client.post("/scorers", json={"display_name": "Alex Smith"})
+    assert scorer.status_code == 201
+    scorer_id = scorer.json()["id"]
+
+    game = client.post(
+        "/games",
+        json={"home_team_id": home, "away_team_id": away, "scorer_id": scorer_id},
+    )
+    assert game.status_code == 201
+    assert game.json()["scorer_id"] == scorer_id
+    assert client.get("/scorers").json() == [scorer.json()]
+
+    invalid_game = client.post(
+        "/games",
+        json={"home_team_id": home, "away_team_id": away, "scorer_id": 999},
+    )
+    assert invalid_game.status_code == 404
+
+
 def test_game_flow_and_half_inning_change(client):
     g, h, a = setup_game(client)
     r = client.post(f"/games/{g}/plays", json={"batter_id": a, "pitcher_id": h, "result": "home_run", "runs_scored": 1})

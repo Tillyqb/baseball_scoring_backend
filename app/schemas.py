@@ -28,16 +28,26 @@ class PlayerOut(ORM, PlayerCreate):
     id: int
 
 
+class ScorerCreate(BaseModel):
+    display_name: str = Field(min_length=1, max_length=100)
+
+
+class ScorerOut(ORM, ScorerCreate):
+    id: int
+
+
 class GameCreate(BaseModel):
     home_team_id: int
     away_team_id: int
     game_date: date | None = None
+    scorer_id: int | None = None
 
 
 class GameOut(ORM):
     id: int
     home_team_id: int
     away_team_id: int
+    scorer_id: int | None
     game_date: date
     status: GameStatus
     inning: int
